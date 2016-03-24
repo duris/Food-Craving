@@ -70,7 +70,7 @@
                                         <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="What're you craving?" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="2Vl-Xo-1v7">
                                             <rect key="frame" x="38" y="8" width="476" height="30"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                            <textInputTraits key="textInputTraits"/>
+                                            <textInputTraits key="textInputTraits" autocapitalizationType="words" autocorrectionType="yes"/>
                                         </textField>
                                         <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ox8-Qe-AT6">
                                             <rect key="frame" x="530" y="8" width="48" height="30"/>
@@ -159,21 +159,50 @@
                                     <constraint firstAttribute="height" constant="77" id="VTe-2b-fdq"/>
                                 </constraints>
                             </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2bq-zq-Bjh">
+                                <rect key="frame" x="0.0" y="64" width="343" height="536"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Hello" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QVy-HE-XwO">
+                                        <rect key="frame" x="152" y="53" width="39" height="21"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="21" id="Bgz-eZ-x0R"/>
+                                            <constraint firstAttribute="width" constant="39" id="ZXP-Fd-Res"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <color key="textColor" red="0.5885003306878307" green="0.5885003306878307" blue="0.5885003306878307" alpha="1" colorSpace="calibratedRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <color key="backgroundColor" red="0.95074818121693117" green="0.95074818121693117" blue="0.95074818121693117" alpha="1" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="343" id="8tY-9c-wOd"/>
+                                    <constraint firstItem="QVy-HE-XwO" firstAttribute="centerX" secondItem="2bq-zq-Bjh" secondAttribute="centerX" id="dAz-jX-9La"/>
+                                    <constraint firstItem="QVy-HE-XwO" firstAttribute="top" secondItem="2bq-zq-Bjh" secondAttribute="top" constant="53" id="lU7-Wy-3u0"/>
+                                </constraints>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <constraints>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="2bq-zq-Bjh" secondAttribute="bottom" id="5pc-E9-Ic2"/>
                             <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="UC8-Qa-HzY" secondAttribute="bottom" id="6KS-ML-bgJ"/>
                             <constraint firstItem="PuL-QD-NLZ" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="7QV-BH-ab9"/>
                             <constraint firstItem="UC8-Qa-HzY" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="-20" id="IAC-Aa-RAg"/>
                             <constraint firstAttribute="trailingMargin" secondItem="UC8-Qa-HzY" secondAttribute="trailing" constant="-20" id="JQJ-Hg-PZi"/>
                             <constraint firstItem="JbU-Hm-5AL" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="-20" id="KZa-FV-5fq"/>
                             <constraint firstItem="PuL-QD-NLZ" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="-20" id="Mwn-sI-lfC"/>
+                            <constraint firstItem="2bq-zq-Bjh" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="Rnm-EQ-Wra"/>
                             <constraint firstAttribute="trailingMargin" secondItem="JbU-Hm-5AL" secondAttribute="trailing" constant="-20" id="WZn-cr-qXd"/>
                             <constraint firstItem="JbU-Hm-5AL" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="j8l-Ka-Muv"/>
+                            <constraint firstItem="2bq-zq-Bjh" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="-20" id="wYj-zR-Zik"/>
                             <constraint firstAttribute="trailingMargin" secondItem="PuL-QD-NLZ" secondAttribute="trailing" constant="-20" id="whY-o6-90Z"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="MJW-rq-nvo">
+                        <barButtonItem key="leftBarButtonItem" title="Menu" id="Z84-qc-CcT">
+                            <connections>
+                                <action selector="didPressMenuButton" destination="BYZ-38-t0r" id="8kp-Nf-mfn"/>
+                            </connections>
+                        </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" systemItem="edit" id="FAW-nl-DTX">
                             <connections>
                                 <action selector="editSliders" destination="BYZ-38-t0r" id="K3l-5Z-Esq"/>
@@ -183,6 +212,7 @@
                     <connections>
                         <outlet property="cancelNewCravingButton" destination="Ox8-Qe-AT6" id="meZ-m5-Ase"/>
                         <outlet property="newCravingTextField" destination="2Vl-Xo-1v7" id="iKU-40-G8b"/>
+                        <outlet property="slideMenu" destination="2bq-zq-Bjh" id="Kpg-c5-iOd"/>
                         <outlet property="sliderTableView" destination="JbU-Hm-5AL" id="atM-vO-buv"/>
                     </connections>
                 </viewController>

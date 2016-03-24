@@ -50,8 +50,7 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
     func runSearch(term: String) {
         let parameters = [
             "ll": "39.9797, -83.0047",
-            "category_filter": "food",
-            "radius_filter": "4000",
+            "radius_filter": "6000",
             "sort": "0",
             "term": term,
             "limit": "5"]
@@ -71,13 +70,16 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
                                     print(id)
                                 }
                                 
-                                let image_url = biz["image_url"]
+                                if let image_url = biz["image_url"] {
+                                   let biz = Business(imageUrl: image_url as! String, name: name as! String, searchString: term)
+                                    self.results.append(biz)
+                                    self.resultsTableView.reloadData()
+                                }
                                 
-                                let biz = Business(imageUrl: image_url as! String, name: name as! String, searchString: term)
+                               
                                 
                                 
-                                self.results.append(biz)
-                                self.resultsTableView.reloadData()
+                           
                             }
                         }
                     }
