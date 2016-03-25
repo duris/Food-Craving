@@ -21,10 +21,9 @@
 		0DD41A6E1CA23F92003E8148 /* Business.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DD41A6D1CA23F92003E8148 /* Business.swift */; };
 		0DD41A721CA24238003E8148 /* ResultsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DD41A711CA24238003E8148 /* ResultsViewController.swift */; };
 		0DD41A741CA2433B003E8148 /* BusinessCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DD41A731CA2433B003E8148 /* BusinessCell.swift */; };
-		0DD41A761CA44BFD003E8148 /* Menu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DD41A751CA44BFD003E8148 /* Menu.swift */; };
 		0DD41A781CA44C04003E8148 /* Craving.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DD41A771CA44C04003E8148 /* Craving.swift */; };
 		0DD41A7A1CA44C39003E8148 /* CoreDataStackManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DD41A791CA44C39003E8148 /* CoreDataStackManager.swift */; };
-		0DD41A7C1CA4678E003E8148 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DD41A7B1CA4678E003E8148 /* HomeViewController.swift */; };
+		0DD41A7E1CA50564003E8148 /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DD41A7D1CA50564003E8148 /* File.swift */; };
 		DC24D0C8EA461D3D40E8F309 /* Pods.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C669C17BE667F1B21AE0AD55 /* Pods.framework */; };
 /* End PBXBuildFile section */
 
@@ -66,10 +65,9 @@
 		0DD41A6D1CA23F92003E8148 /* Business.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Business.swift; sourceTree = "<group>"; };
 		0DD41A711CA24238003E8148 /* ResultsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ResultsViewController.swift; sourceTree = "<group>"; };
 		0DD41A731CA2433B003E8148 /* BusinessCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BusinessCell.swift; sourceTree = "<group>"; };
-		0DD41A751CA44BFD003E8148 /* Menu.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Menu.swift; sourceTree = "<group>"; };
 		0DD41A771CA44C04003E8148 /* Craving.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Craving.swift; sourceTree = "<group>"; };
 		0DD41A791CA44C39003E8148 /* CoreDataStackManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreDataStackManager.swift; sourceTree = "<group>"; };
-		0DD41A7B1CA4678E003E8148 /* HomeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
+		0DD41A7D1CA50564003E8148 /* File.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
 		5C06C025E62C4C6C609F57E9 /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
 		70730F53573391A04800D286 /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
 		C669C17BE667F1B21AE0AD55 /* Pods.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -162,7 +160,6 @@
 			children = (
 				0DC734751C9CAC4100449531 /* YelpClient.swift */,
 				0DD41A6D1CA23F92003E8148 /* Business.swift */,
-				0DD41A751CA44BFD003E8148 /* Menu.swift */,
 				0DD41A771CA44C04003E8148 /* Craving.swift */,
 				0DD41A791CA44C39003E8148 /* CoreDataStackManager.swift */,
 			);
@@ -173,6 +170,7 @@
 			isa = PBXGroup;
 			children = (
 				0DD41A691CA1E205003E8148 /* SliderCell.swift */,
+				0DD41A7D1CA50564003E8148 /* File.swift */,
 				0DD41A6B1CA1E223003E8148 /* Slider.swift */,
 				0DD41A731CA2433B003E8148 /* BusinessCell.swift */,
 			);
@@ -182,7 +180,6 @@
 		0DC734791C9CAC6700449531 /* Controller */ = {
 			isa = PBXGroup;
 			children = (
-				0DD41A7B1CA4678E003E8148 /* HomeViewController.swift */,
 				0DC734461C9A556800449531 /* MenuViewController.swift */,
 				0DD41A711CA24238003E8148 /* ResultsViewController.swift */,
 			);
@@ -394,12 +391,11 @@
 				0DD41A6A1CA1E205003E8148 /* SliderCell.swift in Sources */,
 				0DD41A781CA44C04003E8148 /* Craving.swift in Sources */,
 				0DD41A7A1CA44C39003E8148 /* CoreDataStackManager.swift in Sources */,
-				0DD41A761CA44BFD003E8148 /* Menu.swift in Sources */,
 				0DC734471C9A556800449531 /* MenuViewController.swift in Sources */,
 				0DC7344D1C9A556800449531 /* Food_Craving.xcdatamodeld in Sources */,
+				0DD41A7E1CA50564003E8148 /* File.swift in Sources */,
 				0DD41A6C1CA1E223003E8148 /* Slider.swift in Sources */,
 				0DC734451C9A556800449531 /* AppDelegate.swift in Sources */,
-				0DD41A7C1CA4678E003E8148 /* HomeViewController.swift in Sources */,
 				0DD41A721CA24238003E8148 /* ResultsViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

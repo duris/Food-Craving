@@ -12,23 +12,15 @@ import CoreData
 class MenuViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, NSFetchedResultsControllerDelegate {
     
     @IBOutlet weak var sliderTableView:UITableView!
-    var sliderNames = ["Hamburgers", "Pasta", "Sushi", "Wings"]
+    var searchTerms = [String]()
     var sliders = [Slider]()
     @IBOutlet weak var newCravingTextField:UITextField!
     @IBOutlet weak var cancelNewCravingButton:UIButton!
     @IBOutlet weak var deleteCravingButton:UIButton!
     @IBOutlet weak var slider: Slider!
+    @IBOutlet weak var logoImage:UIImageView!
 
-    @IBOutlet weak var menuTitleTextField:UITextField!
-    var menu: Menu!
-    
-    let menuTitleTextAttributes = [
-        NSFontAttributeName : UIFont(name: "Arial", size: 20)!,
-        NSForegroundColorAttributeName : UIColor.blackColor(),
-        //NSStrokeColorAttributeName : UIColor.blackColor(),
-        //NSStrokeWidthAttributeName: -3.0
-    ]
-    
+
     
     /*
     Core Data Convenience
@@ -50,45 +42,58 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         cancelNewCravingButton.hidden = true
         
-        menuTitleTextField.text = menu.title
-        menuTitleTextField.layer.borderColor = UIColor.clearColor().CGColor
         
         sliderTableView.delegate = self
         sliderTableView.dataSource = self
         sliderTableView.scrollEnabled = false
         
-        setupMenuTextField(menuTitleTextField)
+        logoImage.image = logoImage.image!.imageWithRenderingMode(.AlwaysTemplate)
+        logoImage.tintColor = UIColor.brownColor()
         
         fetchedCravingsController.delegate = self
         
         fetchAllCravings()
         
-        for craving in menu.cravings {
-            print(craving.rating)
-        }
+ 
     }
 
+    override func viewWillAppear(animated: Bool) {
+        navigationController?.navigationBarHidden = true
+    }
     
    
     override func viewWillDisappear(animated: Bool) {
-        for cell in getAllCells() {
-            let craving = cell.craving as Craving
-                
+        navigationController?.navigationBarHidden = false
+        if fetchedCravingsController.fetchedObjects?.count != 0 {
+            for cell in getAllCells() {
+                let craving = cell.craving as Craving
                 craving.rating = cell.slider.ratingNumber
-            if craving.rating != 0 {
-                saveContext()
-            }                        
+                if craving.rating != 0 {
+                    saveContext()
+                }
+            }
+        }
+    }
+    
+    func textFieldDidBeginEditing(textField: UITextField) {
+        if fetchedCravingsController.fetchedObjects?.count != 0 {
+            for cell in getAllCells() {
+                let craving = cell.craving as Craving
+                craving.rating = cell.slider.ratingNumber
+                if craving.rating != 0 {
+                    saveContext()
+                }
+            }
         }
     }
   
     /*
-    Fetched Entries Controller
+    Fetched Cravings Controller
     */
     lazy var fetchedCravingsController: NSFetchedResultsController = {
         let fetchRequest = NSFetchRequest(entityName: "Craving")
-        //[NSSortDescriptor(key: "date", ascending: false)]
-        fetchRequest.sortDescriptors = []
-        fetchRequest.predicate = NSPredicate(format: "menu == %@", self.menu)
+        let title = NSSortDescriptor(key: "timestamp", ascending: true)
+        fetchRequest.sortDescriptors = [title]
         let fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest,
             managedObjectContext: self.sharedContext,
             sectionNameKeyPath: nil,
@@ -146,11 +151,17 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
         
             let craving = fetchedCravingsController.objectAtIndexPath(indexPath) as! Craving
         
-            cell.silderTitleLabel.text = craving.title
+            cell.slider.sliderTitleLabel.text = craving.title
         
             cell.craving = craving
         
+        
             cell.slider.ratingNumber = craving.rating
+        
+            if craving.rating > 1 {
+                cell.slider.sliderTitleLabel.textColor = UIColor.blackColor()
+                searchTerms.append(cell.slider.sliderTitleLabel.text!)
+            }
            
             print("slider rating: \(cell.slider.ratingNumber)")
         
@@ -162,6 +173,18 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
         
     }
     
+    func getSearchTerms() -> [String] {
+        let items = fetchedCravingsController.fetchedObjects
+        var strings = [String]()
+        for item in items!{
+            if let craving = item as? Craving {
+                if craving.rating > 1 {
+                    strings.append(item.title)   
+                }
+            }
+        }
+        return strings
+    }
     
     @IBAction func editSliders() {
         sliderTableView.editing = true
@@ -173,21 +196,23 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
             textField.hidden = true
             cancelNewCravingButton.hidden = true
             if let newCraving = textField.text! as? String {
-
+                let timestamp = NSDate().timeIntervalSince1970
                 let dictionary = [
                     "title": newCraving,
-                    "rating": 5
+                    "rating": 5,
+                    "timestamp": "\(timestamp)"
                     ] as [String: AnyObject]
                 let craving = Craving(dictionary: dictionary, context: sharedContext)
-                craving.menu = menu
                 saveContext()
-//                sliderTableView.beginUpdates()
-//                sliderTableView.insertRowsAtIndexPaths([
-//                    NSIndexPath(forRow: menu.cravings.count - 1, inSection: 0)
-//                    ], withRowAnimation: .Automatic)
-//                sliderTableView.endUpdates()
-                sliderTableView.reloadData()
+                sliderTableView.beginUpdates()
+                let cravings = fetchedCravingsController.fetchedObjects
+                sliderTableView.insertRowsAtIndexPaths([
+                    NSIndexPath(forRow: cravings!.count - 1, inSection: 0)
+                    ], withRowAnimation: .Automatic)
+                sliderTableView.endUpdates()
+               //sliderTableView.reloadData()
             }
+            
             textField.text = ""
             textField.resignFirstResponder()
             
@@ -195,24 +220,9 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
 
         } else {
             
-            if textField.text == "" {
-                let menuCount = fetchedCravingsController.fetchedObjects?.count
-                textField.text = "Menu \(menuCount! + 1)"
-                
-                textField.resignFirstResponder()
-                return true
-            } else {
-
-                menu.title = textField.text
-                saveContext()
-                
-                sliderTableView.reloadData()
-
-                textField.resignFirstResponder()
-                return true
-            }
-           
+            return true
         }
+        
     }
     
     
@@ -253,32 +263,17 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
     @IBAction func didPressSearchButton() {
         let vc = storyboard?.instantiateViewControllerWithIdentifier("ResultsViewController") as! ResultsViewController
         
-        var searchTerms = [String]()
-        for cell in getAllCells() {
-            let craving = cell.craving as Craving
-            if craving.rating > 1 {
-                searchTerms.append(craving.title)
-            }
-        }
-        vc.searchStrings = searchTerms
+    
+    
+        //vc.searchStrings.removeAll()
+        //vc.searchStrings = getSearchTerms()
+        print("search terms: \(getSearchTerms())")
+
         navigationController?.pushViewController(vc, animated: true)
     }
  
     
-    func setupMenuTextField(textField:UITextField) {
-        //Setup the text field's to the desired format
-        textField.defaultTextAttributes = menuTitleTextAttributes
-        textField.delegate = self
-        textField.center = view.center
-        textField.contentVerticalAlignment = .Center
-        textField.textAlignment = .Center
-        textField.borderStyle = .None
-        
-        //textField.autocapitalizationType = .AllCharacters
-        
-        //Reset the text fields if they're empty
-    }
-  
+    
     func getAllCells() -> [SliderCell] {
         
         var cells = [SliderCell]()
@@ -291,7 +286,6 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
                     
                     cells.append(cell)
                 }
-                
             }
         }
         return cells

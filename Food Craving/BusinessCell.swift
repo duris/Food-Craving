@@ -9,11 +9,13 @@
 
 import UIKit
 
+
 class BusinessCell: UITableViewCell {
     
     @IBOutlet weak var resultImageView:UIImageView!
     @IBOutlet weak var resulTitleLabel:UILabel!
     @IBOutlet weak var resultSubTitleLabel:UILabel!
+    var business: Business!
     
     override func awakeFromNib() {
         super.awakeFromNib()

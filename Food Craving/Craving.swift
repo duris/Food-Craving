@@ -13,7 +13,7 @@ class Craving: NSManagedObject {
     
     @NSManaged var title: String!
     @NSManaged var rating: Int
-    @NSManaged var menu: Menu?
+    @NSManaged var timestamp: String
     var slider: Slider?
     
     var sharedContext = CoreDataStackManager.sharedInstance().managedObjectContext
@@ -32,6 +32,7 @@ class Craving: NSManagedObject {
         // Dictionary
         title = dictionary["title"] as! String
         rating = dictionary["rating"] as! Int
+        timestamp = dictionary["timestamp"] as! String
     }
     
     

@@ -19,6 +19,8 @@ class Slider: UIControl {
     var sliderFillColor = UIView()
     var craving: Craving!
     
+    @IBOutlet weak var sliderTitleLabel:UILabel!
+    
     /*
     Core Data Convenience
     */
@@ -74,7 +76,7 @@ class Slider: UIControl {
         let touchX = touch.locationInView(touch.view).x
         if touchX < barWidth - halfOfSlider - 4 && touchX > 10 {
             sliderTab.frame.origin.x = touch.locationInView(touch.view).x - halfOfSlider
-            let frame = CGRectMake(touchX - halfOfSlider, sliderBar.frame.origin.y - (sliderTab.frame.height/2) + 2, CGFloat(ratingNumber + 15), CGFloat(ratingNumber + 15))
+            let frame = CGRectMake(touchX - halfOfSlider, sliderBar.frame.origin.y - (sliderTab.frame.height/2) + 2, CGFloat(20), CGFloat(20))
             
             let sliderDistance = sliderTab.frame.origin.x
             
@@ -131,44 +133,37 @@ class Slider: UIControl {
                 switch rating {
                 case 0..<15:
                     ratingNumber = 1
-                    label.textColor = UIColor.lightGrayColor()
+                    sliderTitleLabel.textColor = UIColor.lightGrayColor()
                 case 15..<25:
                     ratingNumber = 2
-                    label.textColor = UIColor.blackColor()
+                    sliderTitleLabel.textColor = UIColor.blackColor()
                     sliderFillColor.backgroundColor = UIColor.orangeColor()
                 case 25..<35:
                     ratingNumber = 3
-                    label.textColor = UIColor.blackColor()
-                    //sliderTab.backgroundColor = UIColor.blackColor()
+                    sliderTitleLabel.textColor = UIColor.blackColor()
                 case 35..<45:
                     ratingNumber = 4
-                    label.textColor = UIColor.blackColor()
-                    //sliderTab.backgroundColor = UIColor.blackColor()
+                    sliderTitleLabel.textColor = UIColor.blackColor()
                 case 45..<55:
                     ratingNumber = 5
-                    label.textColor = UIColor.blackColor()
-                    //sliderTab.backgroundColor = UIColor.blackColor()
+                    sliderTitleLabel.textColor = UIColor.blackColor()
                 case 55..<65:
                     ratingNumber = 6
-                    label.textColor = UIColor.blackColor()
-                    //sliderTab.backgroundColor = UIColor.blackColor()
+                    sliderTitleLabel.textColor = UIColor.blackColor()
                 case 65..<75:
                     ratingNumber = 7
-                    label.textColor = UIColor.blackColor()
-                    //sliderTab.backgroundColor = UIColor.blackColor()
+                    sliderTitleLabel.textColor = UIColor.blackColor()
                 case 75..<85:
                     ratingNumber = 8
-                    label.textColor = UIColor.blackColor()
-                    //sliderTab.backgroundColor = UIColor.blackColor()
+                    sliderTitleLabel.textColor = UIColor.blackColor()
                 case 85..<95:
                     ratingNumber = 9
-                    label.textColor = UIColor.blackColor()
-                    //sliderTab.backgroundColor = UIColor.blackColor()
+                    sliderTitleLabel.textColor = UIColor.blackColor()
                 case 95..<115:
                     ratingNumber = 10
-                    label.textColor = UIColor.blackColor()
-                    //sliderTab.backgroundColor = UIColor.blackColor()
+                    sliderTitleLabel.textColor = UIColor.blackColor()
                 default:
+                    sliderTitleLabel.textColor = UIColor.blackColor()
                     sliderFillColor.backgroundColor = UIColor.orangeColor()
                     print("Not in range")
                 }
@@ -189,11 +184,11 @@ class Slider: UIControl {
         } else if  rating == 5{
             sliderTab.frame.origin.x = CGFloat(rating*32) - 4
             let sliderDistance = sliderTab.frame.origin.x
-            sliderFillColor.frame = CGRectMake(sliderFillColor.frame.origin.x, sliderFillColor.frame.origin.y, sliderDistance + 10, sliderFillColor.frame.height)
+            sliderFillColor.frame = CGRectMake(sliderFillColor.frame.origin.x, sliderFillColor.frame.origin.y, sliderDistance + 5, sliderFillColor.frame.height)
         }else {
         sliderTab.frame.origin.x = CGFloat(rating*32) - 25
         let sliderDistance = sliderTab.frame.origin.x
-        sliderFillColor.frame = CGRectMake(sliderFillColor.frame.origin.x, sliderFillColor.frame.origin.y, sliderDistance + 10, sliderFillColor.frame.height)
+        sliderFillColor.frame = CGRectMake(sliderFillColor.frame.origin.x, sliderFillColor.frame.origin.y, sliderDistance + 5, sliderFillColor.frame.height)
         }
     }
     
@@ -234,10 +229,14 @@ class Slider: UIControl {
         self.addSubview(sliderBar)
         self.bringSubviewToFront(sliderFillColor)
         self.bringSubviewToFront(sliderTab)
+        self.bringSubviewToFront(sliderTab)
         self.sendSubviewToBack(sliderBar)
+        self.sendSubviewToBack(sliderTitleLabel)
         
         if self.ratingNumber > 1 {
-         label.textColor = UIColor.blackColor()
+            sliderTitleLabel.textColor = UIColor.blackColor()
+        } else if self.ratingNumber == 1 {
+            sliderTitleLabel.textColor = UIColor.lightGrayColor()
         }
         
         
