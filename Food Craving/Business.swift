@@ -16,4 +16,5 @@ struct Business {
     var searchString:String!
     let id: String!
     var duplicate: Bool!
+    var doubleDupe = false
 }

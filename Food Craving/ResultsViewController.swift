@@ -18,7 +18,8 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
     var searchStrings = [String]()
     var duplicates = [Business]()
     var newResults = [Business]()
-
+    var activeCravings = [Craving]()
+    var distance : Double!
 
     
     
@@ -37,6 +38,8 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        print(round(distance))
 
         resultsTableView.delegate = self
         resultsTableView.dataSource = self
@@ -56,6 +59,9 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
             for item in result{
                 if let craving = item as? Craving {
                     cravings.append(craving)
+                    if craving.rating > 1 {
+                        activeCravings.append(craving)
+                    }
                 }
             }
             
@@ -66,9 +72,14 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
                 cravings.sortInPlace {(craving1:Craving, craving2:Craving) -> Bool in
                     craving1.rating < craving2.rating
                 }
-                if craving.rating > 1 {
-                    self.runSearch(craving.title)
-                    print(craving.rating)
+                if craving.rating == 10 {
+                    let limit = "\(round(Float(craving.rating)*2/Float(self.activeCravings.count)))"
+                    print("The limit is : \(limit)")
+                    self.runSearch(craving.title, limit: limit)
+                }else if craving.rating > 1 {
+                    let limit = "\(round(Float(craving.rating)*2.1/Float(self.activeCravings.count)))"
+                    print("The limit is : \(limit)")
+                    self.runSearch(craving.title, limit: limit)
                 }
             }
             })
@@ -94,6 +105,14 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         return results.count
     }
+    
+    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        let vc = storyboard?.instantiateViewControllerWithIdentifier("BusinessViewController") as! BusinessViewController
+
+        let business = results[indexPath.row]
+        vc.business = business
+        navigationController?.pushViewController(vc, animated: true)
+    }
 
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier("Cell") as! BusinessCell
@@ -115,13 +134,13 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     
     
-    func runSearch(term: String) {
+    func runSearch(term: String, limit: String) {
         let parameters = [
             "ll": "39.9797, -83.0047",
-            "radius_filter": "6000",
+            "radius_filter": "\(round(distance))",
             "sort": "0",
             "term": term,
-            "limit": "5"]
+            "limit": limit]
         
         YelpClient.sharedInstance().searchPlacesWithParameters(parameters, successSearch: { (data, response) -> Void in
             //print(NSString(data: data, encoding: NSUTF8StringEncoding))
@@ -136,7 +155,7 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
                                 
                                 let id = biz["id"] as? String
                                 if let image_url = biz["image_url"] {
-                                    var biz = Business(imageUrl: image_url as! String, name: name as! String, searchString: term, id: id, duplicate:false)
+                                    var biz = Business(imageUrl: image_url as! String, name: name as! String, searchString: term, id: id, duplicate:false, doubleDupe: false)
                                     self.tempIds.append(id!)
                                     //print(id!)
                                     
@@ -144,10 +163,20 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
                                     for item in self.results {
                                         if item.id == id {
                                             biz.duplicate = true
-                                            print(biz.name)
-                                            print(biz.searchString)
-                                            self.duplicates.append(biz)
-                                            print("duplicates: \(self.duplicates.count)")
+                                            for doubleDupe in self.duplicates {
+                                                if doubleDupe.id == item.id {
+                                                    print("Double dupe: \(doubleDupe.name)")
+                                                    print("\(doubleDupe.searchString)")
+                                                    biz.doubleDupe = true
+                                                }
+                                            }
+                                            if biz.doubleDupe == false {
+                                                print(biz.name)
+                                                print(biz.searchString)
+                                                self.duplicates.append(biz)
+                                                print("duplicates: \(self.duplicates.count)")
+                                            }
+                           
                                         } else {
                                         }
                                     }
@@ -183,9 +212,11 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
         for result in results {
             if var biz = result as? Business {
                 for duplicate in duplicates {
+                    
                     if result.id == duplicate.id {
                         print(result)
                         print(duplicate.name)
+                        
                         biz.searchString = "\(result.searchString), \(duplicate.searchString)"
                         print(biz.searchString)
                         //newResults.append(biz)
@@ -207,7 +238,10 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
             }
         
             results = newResults
-          resultsTableView.reloadData()
+            resultsTableView.reloadData()
+        
+   
+        
     }
 
     

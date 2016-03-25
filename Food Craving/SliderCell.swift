@@ -12,15 +12,17 @@ class SliderCell: UITableViewCell {
     
     //@IBOutlet weak var slider: Slider!
     @IBOutlet weak var silderTitleLabel:UILabel!
+    @IBOutlet weak var deleteButton:UIButton!
     @IBOutlet weak var slider: Slider!
     var craving: Craving!
+    
     
     var rating = 10
     
     override func awakeFromNib() {
         super.awakeFromNib()
        
-
+        deleteButton.hidden = true
        
         var tabFrame = CGRectMake(slider.bounds.width/2 - 100, 14, 20, 20)
         
@@ -49,5 +51,7 @@ class SliderCell: UITableViewCell {
         
         // Configure the view for the selected state
     }
+    
+
     
 }

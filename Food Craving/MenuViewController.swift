@@ -20,10 +20,13 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
     @IBOutlet weak var deleteCravingButton:UIButton!
     @IBOutlet weak var slider: Slider!
     @IBOutlet weak var logoImage:UIImageView!
-    var locManager = CLLocationManager()
+    @IBOutlet weak var segmentedControl:UISegmentedControl!
+    var distanceMeters = 1609.34
     var currentLocation = CLLocation()
     @IBOutlet weak var locationButton:UIButton!
-    @IBOutlet weak var sampleLabel:UILabel!
+    @IBOutlet weak var deleteView:UIView!
+    @IBOutlet weak var editButton:UIButton!
+    
 
 
     
@@ -47,6 +50,7 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         cancelNewCravingButton.hidden = true
         
+        prepareSegment()
         
         sliderTableView.delegate = self
         sliderTableView.dataSource = self
@@ -59,19 +63,27 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         fetchAllCravings()
         
-       
-        locManager.requestWhenInUseAuthorization()
+        if fetchedCravingsController.fetchedObjects?.count > 0 {
+            editButton.enabled = true
+        } else {
+             editButton.enabled = false
+        }
+        
+         var locManager = CLLocationManager()
         
         
         if( CLLocationManager.authorizationStatus() == CLAuthorizationStatus.AuthorizedWhenInUse ||
             CLLocationManager.authorizationStatus() == .AuthorizedAlways ){
                 
-                currentLocation = locManager.location!
+                if let location = locManager.location! as? CLLocation{
+                    currentLocation = location
+                }
+
                 geocodeLocation(currentLocation)
         
         }
     }
-
+    
     override func viewWillAppear(animated: Bool) {
         navigationController?.navigationBarHidden = true
     }
@@ -205,6 +217,21 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
         sliderTableView.editing = true
     }
     
+    @IBAction func didTouchEditButton() {
+        if fetchedCravingsController.fetchedObjects?.count != 0 {
+        for cell in getAllCells() {
+            if cell.deleteButton.hidden == true {
+             cell.deleteButton.hidden = false
+                editButton.setTitle("Done", forState: .Normal)
+            } else {
+                cell.deleteButton.hidden = true
+                editButton.setTitle("Edit", forState: .Normal)
+            }
+        }
+        }
+        
+    }
+    
     func textFieldShouldReturn(textField: UITextField) -> Bool {
 
         if textField == newCravingTextField {
@@ -226,6 +253,7 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
                     ], withRowAnimation: .Automatic)
                 sliderTableView.endUpdates()
                //sliderTableView.reloadData()
+                editButton.enabled = true
             }
             
             textField.text = ""
@@ -251,19 +279,23 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     @IBAction func deleteSlider(sender: AnyObject) {
         var indexPath: NSIndexPath!
-        
         if let button = sender as? UIButton {
             if let superview = button.superview {
                 if let cell = superview.superview as? SliderCell {
                     indexPath = sliderTableView.indexPathForCell(cell)
                     let craving = fetchedCravingsController.objectAtIndexPath(indexPath) as! Craving
                     sharedContext.deleteObject(craving)
+                    cell.deleteButton.hidden = true
                     saveContext()
                     
                     sliderTableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Top)
 
                 }
             }
+        }
+        if fetchedCravingsController.fetchedObjects?.count == 0 {
+            editButton.setTitle("Edit", forState: .Normal)
+            editButton.enabled = false
         }
 
     }
@@ -272,6 +304,12 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
         newCravingTextField.hidden = false
         cancelNewCravingButton.hidden = false
         newCravingTextField.becomeFirstResponder()
+        if fetchedCravingsController.fetchedObjects?.count != 0 {
+        for cell in getAllCells() {
+            editButton.setTitle("Edit", forState: .Normal)
+            cell.deleteButton.hidden = true
+        }
+        }
     }
     
     
@@ -282,7 +320,8 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
     
         //vc.searchStrings.removeAll()
         //vc.searchStrings = getSearchTerms()
-        print("search terms: \(getSearchTerms())")
+
+        vc.distance = distanceMeters
 
         navigationController?.pushViewController(vc, animated: true)
     }
@@ -290,7 +329,6 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     
     func getAllCells() -> [SliderCell] {
-        
         var cells = [SliderCell]()
         // assuming tableView is your self.tableView defined somewhere
         for i in 0...sliderTableView.numberOfSections-1
@@ -305,11 +343,13 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
         return cells
     }
-    
+
+    @IBAction func didPressChangeLocationButton() {
+        let vc = storyboard?.instantiateViewControllerWithIdentifier("LocationSelectorNavigationController") as! UINavigationController
+        navigationController?.presentViewController(vc, animated: true, completion: nil)
+    }
     
     func geocodeLocation(location: CLLocation) {
-        
-        
         CLGeocoder().reverseGeocodeLocation(location, completionHandler: {(placemarks, error) -> Void in
             print(location)
             
@@ -332,6 +372,45 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
         })
     }
     
+    func prepareSegment() {
+        let items = ["1 Mi", "5 Mi", "10 Mi", "15 Mi"]
+        let customSC = UISegmentedControl(items: items)
+        customSC.selectedSegmentIndex = 0
+        
+        let frame = UIScreen.mainScreen().bounds
+        customSC.frame = CGRectMake(frame.minX + 30, frame.maxY - 140,
+            frame.width - 60, 40)
+        
+        // Style the Segmented Control
+        customSC.layer.cornerRadius = 5.0  // Don't let background bleed
+        customSC.backgroundColor = UIColor.clearColor()
+        customSC.tintColor = UIColor.brownColor()
+
+        
+        // Add target action method
+        customSC.addTarget(self, action: "changeColor:", forControlEvents: .ValueChanged)
+        
+        self.view.addSubview(customSC)
+    }
+    
+    func changeColor(sender: UISegmentedControl) {
+        switch sender.selectedSegmentIndex {
+        case 0:
+            distanceMeters = 1 * 1609.34
+        case 1:
+            distanceMeters = 5 * 1609.34
+        case 2:
+            distanceMeters = 10 * 1609.34
+        case 3:
+            distanceMeters = 15 * 1609.34
+        default:
+            distanceMeters = 1 * 1609.34
+        }
+    }
+    
+
+    
+ 
     
 }
 
