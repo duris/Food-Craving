@@ -20,6 +20,7 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
     var newResults = [Business]()
     var activeCravings = [Craving]()
     var distance : Double!
+    var cravingLoadedCount = 0
 
     
     
@@ -43,9 +44,10 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
 
         resultsTableView.delegate = self
         resultsTableView.dataSource = self
-
         
         let fetchRequest = NSFetchRequest()
+        
+        
         
         // Create Entity Description
         let entityDescription = NSEntityDescription.entityForName("Craving", inManagedObjectContext: self.sharedContext)
@@ -66,24 +68,12 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
             }
             
            
-            dispatch_async(dispatch_get_main_queue(), {
-            
-            for craving in cravings {
-                cravings.sortInPlace {(craving1:Craving, craving2:Craving) -> Bool in
-                    craving1.rating < craving2.rating
-                }
-                if craving.rating == 10 {
-                    let limit = "\(round(Float(craving.rating)*2/Float(self.activeCravings.count)))"
-                    print("The limit is : \(limit)")
-                    self.runSearch(craving.title, limit: limit)
-                }else if craving.rating > 1 {
-                    let limit = "\(round(Float(craving.rating)*2.1/Float(self.activeCravings.count)))"
-                    print("The limit is : \(limit)")
-                    self.runSearch(craving.title, limit: limit)
+            searchYelp(cravings) { (success) in
+                if success {
+                    //self.sortSimilar()
+                    print("Craving Count: \(self.cravingLoadedCount)")
                 }
             }
-            })
-
             
         } catch {
             let fetchError = error as NSError
@@ -91,6 +81,25 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
         
         
+    }
+    
+    func searchYelp(cravings:[Craving], completionHandler: (success: Bool) -> Void) {
+        for craving in cravings {
+            if craving.rating == 10 {
+                let limit = "\(round(Float(craving.rating)*2/Float(self.activeCravings.count)))"
+                print("The limit is : \(limit)")
+                self.runSearch(craving.title, limit: limit)
+                
+            }else if craving.rating > 1 {
+                let limit = "\(round(Float(craving.rating)*2.1/Float(self.activeCravings.count)))"
+                print("The limit is : \(limit)")
+                self.runSearch(craving.title, limit: limit)
+            }
+        }
+        dispatch_async(dispatch_get_main_queue(), {
+            self.cravingLoadedCount = cravings.count
+            completionHandler(success: true)
+        })
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -128,6 +137,16 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
             }
         }
         
+        if let starURL = NSURL(string: results[indexPath.row].starRating) {
+            if let imageData = NSData(contentsOfURL: starURL) {
+                let image = UIImage(data: imageData)
+                cell.ratingImageView.image = image!
+            }
+        }
+        
+        let reviewCount = results[indexPath.row].reviewCount
+        cell.reviewCountLabel.text = "\(reviewCount) Reviews"
+        
         cell.resultSubTitleLabel.text = results[indexPath.row].searchString
         return cell
     }
@@ -151,11 +170,22 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
                     if let businesses = jsonArray["businesses"] as? NSArray{
                         for biz in (businesses as? [[String:AnyObject]])!{
                             if let name = biz["name"] {
-                                //print(name)
+                                
+                               
                                 
                                 let id = biz["id"] as? String
                                 if let image_url = biz["image_url"] {
-                                    var biz = Business(imageUrl: image_url as! String, name: name as! String, searchString: term, id: id, duplicate:false, doubleDupe: false)
+                                    var url = ""
+                                    var reviewCount = ""
+                                    if let starRating = biz["rating_img_url"] {
+                                        url = starRating as! String
+                                    }
+                                    if let reviews = biz["review_count"] {
+                                        print("review count")
+                                        print(reviewCount)
+                                        reviewCount = "\(reviews)"
+                                    }
+                                    var biz = Business(imageUrl: image_url as! String, name: name as! String, searchString: term, id: id, duplicate:false, doubleDupe: false, starRating: url, reviewCount: reviewCount)
                                     self.tempIds.append(id!)
                                     //print(id!)
                                     
@@ -193,8 +223,15 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
                         }
                     }
                     
+                    self.cravingLoadedCount = self.cravingLoadedCount + 1
+                    print("craving loaded count:\(self.cravingLoadedCount)")
+                    print("active cravings: \(self.activeCravings.count)")
+                    if self.cravingLoadedCount/2 == self.activeCravings.count {
+                         self.sortSimilar()
+                        
+                        //Stop Loading Results :)
+                    }
                 }
-                    
                     
                 catch {
                     print("Error: \(error)")
@@ -207,7 +244,7 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
 
     }
     
-    @IBAction func sort() {
+    func sortSimilar() {
         newResults.removeAll()
         for result in results {
             if var biz = result as? Business {

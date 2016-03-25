@@ -15,11 +15,19 @@ class BusinessCell: UITableViewCell {
     @IBOutlet weak var resultImageView:UIImageView!
     @IBOutlet weak var resulTitleLabel:UILabel!
     @IBOutlet weak var resultSubTitleLabel:UILabel!
+    @IBOutlet weak var ratingImageView:UIImageView!
+    @IBOutlet weak var reviewCountLabel:UILabel!
     var business: Business!
     
     override func awakeFromNib() {
         super.awakeFromNib()
-        // Initialization code
+       
+        resultImageView.layer.cornerRadius = resultImageView.frame.width/2
+        resultImageView.clipsToBounds = true
+
+        resultImageView.layer.borderColor = UIColor.lightGrayColor().CGColor
+        resultImageView.layer.borderWidth = 1
+        
     }
     
     override func setSelected(selected: Bool, animated: Bool) {

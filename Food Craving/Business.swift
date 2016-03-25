@@ -17,4 +17,6 @@ struct Business {
     let id: String!
     var duplicate: Bool!
     var doubleDupe = false
+    let starRating:String!
+    let reviewCount: String!
 }
