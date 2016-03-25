@@ -7,8 +7,9 @@
 //
 
 import UIKit
+import CoreData
 
-class MenuViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate {
+class MenuViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, NSFetchedResultsControllerDelegate {
     
     @IBOutlet weak var sliderTableView:UITableView!
     var sliderNames = ["Hamburgers", "Pasta", "Sushi", "Wings"]
@@ -16,7 +17,30 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
     @IBOutlet weak var newCravingTextField:UITextField!
     @IBOutlet weak var cancelNewCravingButton:UIButton!
     @IBOutlet weak var deleteCravingButton:UIButton!
-    @IBOutlet weak var slideMenu: UIView!
+    @IBOutlet weak var slider: Slider!
+
+    @IBOutlet weak var menuTitleTextField:UITextField!
+    var menu: Menu!
+    
+    let menuTitleTextAttributes = [
+        NSFontAttributeName : UIFont(name: "Arial", size: 20)!,
+        NSForegroundColorAttributeName : UIColor.blackColor(),
+        //NSStrokeColorAttributeName : UIColor.blackColor(),
+        //NSStrokeWidthAttributeName: -3.0
+    ]
+    
+    
+    /*
+    Core Data Convenience
+    */
+    var sharedContext: NSManagedObjectContext {
+        return CoreDataStackManager.sharedInstance().managedObjectContext
+    }
+    
+    func saveContext() {
+        CoreDataStackManager.sharedInstance().saveContext()
+    }
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,150 +50,169 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         cancelNewCravingButton.hidden = true
         
-        
+        menuTitleTextField.text = menu.title
+        menuTitleTextField.layer.borderColor = UIColor.clearColor().CGColor
         
         sliderTableView.delegate = self
         sliderTableView.dataSource = self
         sliderTableView.scrollEnabled = false
         
-    }
-    
-    override func viewDidLayoutSubviews() {
-        slideMenu.hidden = true
-        slideMenu.frame.origin.x -= slideMenu.frame.width
-    }
-
-    
-    @IBAction func didPressMenuButton() {
+        setupMenuTextField(menuTitleTextField)
         
-        if slideMenu.hidden == true {
-        slideMenu.hidden = false
-   
-        UIView.animateWithDuration(0.25, delay: 0.0, usingSpringWithDamping: 1.5, initialSpringVelocity: 1.5,
-            options: [], animations: {
-                // 3
-                self.slideMenu.frame.origin.x += self.slideMenu.frame.width + 10
-            },
-            completion: { _ in
-                // 4
-                UIView.animateWithDuration(0.35, delay: 0.0, usingSpringWithDamping: 0.9, initialSpringVelocity: 4.5,
-                    options: [], animations: {
-                        // 5
-                        self.slideMenu.frame.origin.x -= 10
-                    }, 
-                    completion: { _ in
-                        // 6
-                        print("done")
-                })
-            })
-        } else {
-            UIView.animateWithDuration(0.2, animations: { () -> Void in
-                self.slideMenu.frame.origin.x -= self.slideMenu.frame.width
-                },
-                completion: { _ in
-                    // 4
-                    UIView.animateWithDuration(0.35, delay: 0.0, usingSpringWithDamping: 0.9, initialSpringVelocity: 4.5,
-                        options: [], animations: {
-                            // 5
-
-                            //Animate Menu button?
-                            
-                        },
-                        completion: { _ in
-                            // 6
-                            self.slideMenu.hidden = true
-                    })
-            })
-
+        fetchedCravingsController.delegate = self
+        
+        fetchAllCravings()
+        
+        for craving in menu.cravings {
+            print(craving.rating)
         }
+    }
+
+    
+   
+    override func viewWillDisappear(animated: Bool) {
+        for cell in getAllCells() {
+            let craving = cell.craving as Craving
+                
+                craving.rating = cell.slider.ratingNumber
+            if craving.rating != 0 {
+                saveContext()
+            }                        
+        }
+    }
+  
+    /*
+    Fetched Entries Controller
+    */
+    lazy var fetchedCravingsController: NSFetchedResultsController = {
+        let fetchRequest = NSFetchRequest(entityName: "Craving")
+        //[NSSortDescriptor(key: "date", ascending: false)]
+        fetchRequest.sortDescriptors = []
+        fetchRequest.predicate = NSPredicate(format: "menu == %@", self.menu)
+        let fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest,
+            managedObjectContext: self.sharedContext,
+            sectionNameKeyPath: nil,
+            cacheName: nil)
         
+        return fetchedResultsController
         
+    }()
+    
+    func controller(controller: NSFetchedResultsController,
+        didChangeObject anObject: AnyObject,
+        atIndexPath indexPath: NSIndexPath?,
+        forChangeType type: NSFetchedResultsChangeType,
+        newIndexPath: NSIndexPath?) {
+            
+            switch type {
+            case .Insert:
+                print("insert")
+                print(fetchedCravingsController.fetchedObjects?.count)
+                
+            case .Delete:
+                print("delete")
+                print(fetchedCravingsController.fetchedObjects?.count)
+                
+            case .Update:
+                print("update")
+                print(fetchedCravingsController.fetchedObjects?.count)
+            default:
+                return
+            }
     }
     
+    func fetchAllCravings() {
+        do {
+            try fetchedCravingsController.performFetch()
+        } catch {
+            print("error fetching")
+        }
+    }
+    
+    
+  
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return sliderNames.count
+        
+        let sectionInfo = self.fetchedCravingsController.sections![section]
+        return sectionInfo.numberOfObjects
+        
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("Cell") as! SliderCell
+        
+            
+            let cell = tableView.dequeueReusableCellWithIdentifier("Cell") as! SliderCell
+        
+            let craving = fetchedCravingsController.objectAtIndexPath(indexPath) as! Craving
+        
+            cell.silderTitleLabel.text = craving.title
+        
+            cell.craving = craving
+        
+            cell.slider.ratingNumber = craving.rating
+           
+            print("slider rating: \(cell.slider.ratingNumber)")
+        
+            cell.slider.setSlideToRating(craving.rating)
+        
+ 
+           return cell
         
         
-        
-        let frame = CGRectMake(40, 5, view.frame.width - 80, 70)
-        let tabFrame = CGRectMake(frame.width/2 - 6, 33, 20, 20)
-        let tabView = UIView()
-    
-        tabView.userInteractionEnabled = false
-        tabView.backgroundColor = UIColor.whiteColor()
-        tabView.layer.borderColor = UIColor.orangeColor().CGColor
-        tabView.layer.borderWidth = 2
-        tabView.frame = tabFrame
-        tabView.layer.cornerRadius = tabView.frame.height/2
-        tabView.layer.masksToBounds = true
-        
-        
-        let slider = Slider()
-        //slider.backgroundColor = UIColor.blueColor()
-        slider.sliderTab = tabView
-        slider.label = cell.silderTitleLabel
-        slider.frame = frame
-        cell.slider = slider
-        sliders.append(slider)
-        slider.addSubview(tabView)
-        cell.addSubview(slider)
-        print("Slider rating: \(slider.ratingNumber)")
-        cell.silderTitleLabel.text = sliderNames[indexPath.row]
-        //Slider bar image
-        
-        //Slider tab image
-        
-        let sliderFillFrame = CGRectMake(10, slider.frame.height/2 + 5, slider.frame.width/2, 5)
-        slider.sliderFillColor.frame = sliderFillFrame
-        slider.sliderFillColor.backgroundColor = UIColor.orangeColor()
-        slider.sliderFillColor.layer.cornerRadius = 2
-        slider.sliderFillColor.clipsToBounds = true
-        slider.addSubview(slider.sliderFillColor)
-        
-        
-        return cell
     }
     
-    func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        
-        return false
-    }
-    
-    func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        if editingStyle == .Delete {
-            sliderNames.removeAtIndex(indexPath.row)
-            tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Top)
-        }
-    }
     
     @IBAction func editSliders() {
         sliderTableView.editing = true
     }
     
     func textFieldShouldReturn(textField: UITextField) -> Bool {
-        newCravingTextField.hidden = true
-        cancelNewCravingButton.hidden = true
-        
-        if let newCraving = textField.text! as? String {
+
+        if textField == newCravingTextField {
+            textField.hidden = true
+            cancelNewCravingButton.hidden = true
+            if let newCraving = textField.text! as? String {
+
+                let dictionary = [
+                    "title": newCraving,
+                    "rating": 5
+                    ] as [String: AnyObject]
+                let craving = Craving(dictionary: dictionary, context: sharedContext)
+                craving.menu = menu
+                saveContext()
+//                sliderTableView.beginUpdates()
+//                sliderTableView.insertRowsAtIndexPaths([
+//                    NSIndexPath(forRow: menu.cravings.count - 1, inSection: 0)
+//                    ], withRowAnimation: .Automatic)
+//                sliderTableView.endUpdates()
+                sliderTableView.reloadData()
+            }
+            textField.text = ""
+            textField.resignFirstResponder()
             
-            sliderNames.append(newCraving)
+            return true
+
+        } else {
             
-            sliderTableView.beginUpdates()
-            sliderTableView.insertRowsAtIndexPaths([
-                NSIndexPath(forRow: sliderNames.count-1, inSection: 0)
-                ], withRowAnimation: .Automatic)
-            sliderTableView.endUpdates()
+            if textField.text == "" {
+                let menuCount = fetchedCravingsController.fetchedObjects?.count
+                textField.text = "Menu \(menuCount! + 1)"
+                
+                textField.resignFirstResponder()
+                return true
+            } else {
+
+                menu.title = textField.text
+                saveContext()
+                
+                sliderTableView.reloadData()
+
+                textField.resignFirstResponder()
+                return true
+            }
            
         }
-        newCravingTextField.text = ""
-        newCravingTextField.resignFirstResponder()
-        
-        return true
     }
     
     
@@ -188,10 +231,12 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
             if let superview = button.superview {
                 if let cell = superview.superview as? SliderCell {
                     indexPath = sliderTableView.indexPathForCell(cell)
-                    sliderNames.removeAtIndex(indexPath.row)
+                    let craving = fetchedCravingsController.objectAtIndexPath(indexPath) as! Craving
+                    sharedContext.deleteObject(craving)
+                    saveContext()
+                    
                     sliderTableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Top)
-                    sliders.removeAtIndex(indexPath.row)
-                    cell.slider.removeFromSuperview()
+
                 }
             }
         }
@@ -209,15 +254,49 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
         let vc = storyboard?.instantiateViewControllerWithIdentifier("ResultsViewController") as! ResultsViewController
         
         var searchTerms = [String]()
-        for slider in sliders {
-            if slider.ratingNumber > 1 {
-                searchTerms.append(slider.label.text!)
+        for cell in getAllCells() {
+            let craving = cell.craving as Craving
+            if craving.rating > 1 {
+                searchTerms.append(craving.title)
             }
         }
         vc.searchStrings = searchTerms
         navigationController?.pushViewController(vc, animated: true)
     }
  
+    
+    func setupMenuTextField(textField:UITextField) {
+        //Setup the text field's to the desired format
+        textField.defaultTextAttributes = menuTitleTextAttributes
+        textField.delegate = self
+        textField.center = view.center
+        textField.contentVerticalAlignment = .Center
+        textField.textAlignment = .Center
+        textField.borderStyle = .None
+        
+        //textField.autocapitalizationType = .AllCharacters
+        
+        //Reset the text fields if they're empty
+    }
+  
+    func getAllCells() -> [SliderCell] {
+        
+        var cells = [SliderCell]()
+        // assuming tableView is your self.tableView defined somewhere
+        for i in 0...sliderTableView.numberOfSections-1
+        {
+            for j in 0...sliderTableView.numberOfRowsInSection(i)-1
+            {
+                if let cell = sliderTableView.cellForRowAtIndexPath(NSIndexPath(forRow: j, inSection: i)) as? SliderCell{
+                    
+                    cells.append(cell)
+                }
+                
+            }
+        }
+        return cells
+    }
+    
     
     
 }

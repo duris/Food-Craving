@@ -8,23 +8,29 @@
 
 
 import UIKit
+import CoreData
 
 class Slider: UIControl {
     
     var sliderTab = UIView()
-    var ratingNumber = 5
-    var label:UILabel!
+    var ratingNumber = 0
+    var label = UILabel()
     var sliderBar = UIView()
     var sliderFillColor = UIView()
+    var craving: Craving!
     
-    
-    override func beginTrackingWithTouch(touch: UITouch, withEvent event: UIEvent?) -> Bool {
-        return true
-        
+    /*
+    Core Data Convenience
+    */
+    var sharedContext: NSManagedObjectContext {
+        return CoreDataStackManager.sharedInstance().managedObjectContext
     }
     
-    override func continueTrackingWithTouch(touch: UITouch, withEvent event: UIEvent?) -> Bool {
-        print(touch.locationInView(touch.view))
+    func saveContext() {
+        CoreDataStackManager.sharedInstance().saveContext()
+    }
+    
+    override func beginTrackingWithTouch(touch: UITouch, withEvent event: UIEvent?) -> Bool {
         
         let barWidth = self.frame.width
         let halfOfSlider = sliderTab.frame.width/2
@@ -47,6 +53,41 @@ class Slider: UIControl {
                 sliderFillColor.frame = sliderFrame
             }
             
+        
+            
+            
+            sliderTab.layer.cornerRadius = sliderTab.frame.height/2
+            sliderTab.layer.masksToBounds = true
+            
+            sliderTab.frame = frame
+        }
+        
+        return true
+    }
+    
+    override func continueTrackingWithTouch(touch: UITouch, withEvent event: UIEvent?) -> Bool {
+        print(touch.locationInView(touch.view))
+        
+        let barWidth = self.frame.width
+        let halfOfSlider = sliderTab.frame.width/2
+        print(barWidth)
+        let touchX = touch.locationInView(touch.view).x
+        if touchX < barWidth - halfOfSlider - 4 && touchX > 10 {
+            sliderTab.frame.origin.x = touch.locationInView(touch.view).x - halfOfSlider
+            let frame = CGRectMake(touchX - halfOfSlider, sliderBar.frame.origin.y - (sliderTab.frame.height/2) + 2, CGFloat(ratingNumber + 15), CGFloat(ratingNumber + 15))
+            
+            let sliderDistance = sliderTab.frame.origin.x
+            
+            if sliderTab.frame.origin.x > 0 && ratingNumber > 5 {
+                let sliderFrame = CGRectMake(sliderFillColor.frame.origin.x, sliderFillColor.frame.origin.y, sliderDistance + 10, sliderFillColor.frame.height)
+                sliderFillColor.frame = sliderFrame
+            } else if sliderTab.frame.origin.x > 0{
+                let sliderFrame = CGRectMake(sliderFillColor.frame.origin.x, sliderFillColor.frame.origin.y, sliderDistance + 4, sliderFillColor.frame.height)
+                sliderFillColor.frame = sliderFrame
+            } else if sliderFillColor.frame.width > sliderTab.frame.origin.x && sliderTab.frame.origin.x > 0 {
+                let sliderFrame = CGRectMake(sliderFillColor.frame.origin.x, sliderFillColor.frame.origin.y, sliderDistance, sliderFillColor.frame.height)
+                sliderFillColor.frame = sliderFrame
+            }
             
             
             
@@ -140,36 +181,58 @@ class Slider: UIControl {
         true
     }
     
+    func setSlideToRating(rating: Int) {
+        if rating == 10 {
+            sliderTab.frame.origin.x = CGFloat(rating*32) - 36
+            let sliderDistance = sliderTab.frame.origin.x
+            sliderFillColor.frame = CGRectMake(sliderFillColor.frame.origin.x, sliderFillColor.frame.origin.y, sliderDistance + 10, sliderFillColor.frame.height)
+        } else if  rating == 5{
+            sliderTab.frame.origin.x = CGFloat(rating*32) - 4
+            let sliderDistance = sliderTab.frame.origin.x
+            sliderFillColor.frame = CGRectMake(sliderFillColor.frame.origin.x, sliderFillColor.frame.origin.y, sliderDistance + 10, sliderFillColor.frame.height)
+        }else {
+        sliderTab.frame.origin.x = CGFloat(rating*32) - 25
+        let sliderDistance = sliderTab.frame.origin.x
+        sliderFillColor.frame = CGRectMake(sliderFillColor.frame.origin.x, sliderFillColor.frame.origin.y, sliderDistance + 10, sliderFillColor.frame.height)
+        }
+    }
+    
     override func layoutSubviews() {
         
-//        sliderTab.backgroundColor = UIColor.whiteColor()
-//        sliderTab.layer.borderColor = UIColor.blackColor().CGColor
-//        sliderTab.layer.shadowColor = UIColor.blackColor().CGColor
-//        sliderTab.layer.shadowOffset = CGSizeMake(5, 5);
-//        sliderTab.layer.shadowOpacity = 1;
-//        sliderTab.layer.shadowRadius = 3.0;
         
-        //sliderTab.backgroundColor = UIColor.whiteColor()
+      
+        sliderTab.backgroundColor = UIColor.whiteColor()
         sliderTab.layer.shadowColor = UIColor.blackColor().CGColor
         sliderTab.layer.shadowOpacity = 1
-        sliderTab.layer.shadowOffset = CGSizeZero
+        sliderTab.layer.shadowOffset = CGSizeMake(5, 5)
         sliderTab.layer.shadowRadius = 10
-        sliderTab.layer.shadowPath = UIBezierPath(rect: sliderTab.bounds).CGPath
-        sliderTab.layer.shouldRasterize = true
         
+        sliderTab.layer.cornerRadius = sliderTab.frame.height/2
+        sliderTab.layer.masksToBounds = true
         
+        sliderTab.layer.borderWidth = 0.70
+        sliderTab.layer.borderColor = UIColor.lightGrayColor().CGColor
+        
+        self.addSubview(sliderTab)
+
         let sliderBarFrame = CGRectMake(10, self.frame.height/2 + 5, self.frame.width - 20, 5)
         sliderBar.frame = sliderBarFrame
         sliderBar.backgroundColor = UIColor.lightGrayColor()
-//        sliderBar.layer.borderWidth = 1
-//        sliderBar.layer.borderColor = UIColor.orangeColor().CGColor
+
         sliderBar.layer.cornerRadius = 2
         sliderBar.clipsToBounds = true
         sliderBar.userInteractionEnabled = false
         
-    
+//    
+//        let sliderFillFrame = CGRectMake(10, self.frame.height/2 + 5, self.frame.width/2, 5)
+//        sliderFillColor.frame = sliderFillFrame
+//        sliderFillColor.backgroundColor = UIColor.orangeColor()
+//        sliderFillColor.layer.cornerRadius = 2
+//        sliderFillColor.clipsToBounds = true
+//        sliderBar.addSubview(sliderFillColor)
         
         self.addSubview(sliderBar)
+        self.bringSubviewToFront(sliderFillColor)
         self.bringSubviewToFront(sliderTab)
         self.sendSubviewToBack(sliderBar)
         
@@ -177,14 +240,12 @@ class Slider: UIControl {
          label.textColor = UIColor.blackColor()
         }
         
-
         
-        //        sliderBarImage.image = sliderBarImage.image?.imageWithRenderingMode(.AlwaysTemplate)
-        //        sliderOutline.image = sliderOutline.image?.imageWithRenderingMode(.AlwaysTemplate)
-        //        let middleColor = UIColor(red: 1, green: 1, blue: 0, alpha: 1)
-        //        sliderBarImage.tintColor = middleColor
-        //        sliderOutline.tintColor = middleColor
-        //        ratingNumberLabel.textColor = middleColor
+    }
+    
+    func getRating() -> Int{
+        
+        return ratingNumber
     }
     
 }
