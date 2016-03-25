@@ -13,7 +13,7 @@ struct Business {
     
     let imageUrl:String!
     let name:String!
-    let searchString:String!
+    var searchString:String!
     let id: String!
     var duplicate: Bool!
 }

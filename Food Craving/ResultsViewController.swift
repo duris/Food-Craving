@@ -13,10 +13,12 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     @IBOutlet weak var resultsTableView: UITableView!
     var results = [Business]()
-    var tempResults = [Business]()
+    var tempResults = [String]()
     var tempIds = [String]()
     var searchStrings = [String]()
     var duplicates = [Business]()
+    var newResults = [Business]()
+
 
     
     
@@ -138,11 +140,7 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
                                     self.tempIds.append(id!)
                                     //print(id!)
                                     
-//                                    for item in self.tempResults {
-//                                        if item.id != biz.id {
-//                                            self.tempResults.append(biz)
-//                                        }
-//                                    }
+                                    
                                     for item in self.results {
                                         if item.id == id {
                                             biz.duplicate = true
@@ -156,6 +154,7 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
                                     if biz.duplicate == false {
                                         self.results.append(biz)
                                         self.resultsTableView.reloadData()
+                                        self.tempResults.append(biz.id)
                                     }
                                    
 
@@ -178,6 +177,40 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
         })
 
     }
+    
+    @IBAction func sort() {
+        newResults.removeAll()
+        for result in results {
+            if var biz = result as? Business {
+                for duplicate in duplicates {
+                    if result.id == duplicate.id {
+                        print(result)
+                        print(duplicate.name)
+                        biz.searchString = "\(result.searchString), \(duplicate.searchString)"
+                        print(biz.searchString)
+                        //newResults.append(biz)
+                        newResults.insert(biz, atIndex: 0)
+                        biz.duplicate = true
+                        print(biz.name)
+                        print(biz.searchString)
+                    
+                        print("duplicates: \(self.duplicates.count)")
+                        } else {
+                            //newResults.append(result)
+                        }
+                    }
+                    if biz.duplicate == false {
+                        newResults.append(biz)
+                    }
+                }
+   
+            }
+        
+            results = newResults
+          resultsTableView.reloadData()
+    }
+
+    
     
     func getAllCells() -> [BusinessCell] {
         

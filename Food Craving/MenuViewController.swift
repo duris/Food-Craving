@@ -8,6 +8,7 @@
 
 import UIKit
 import CoreData
+import CoreLocation
 
 class MenuViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, NSFetchedResultsControllerDelegate {
     
@@ -19,6 +20,10 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
     @IBOutlet weak var deleteCravingButton:UIButton!
     @IBOutlet weak var slider: Slider!
     @IBOutlet weak var logoImage:UIImageView!
+    var locManager = CLLocationManager()
+    var currentLocation = CLLocation()
+    @IBOutlet weak var locationButton:UIButton!
+    @IBOutlet weak var sampleLabel:UILabel!
 
 
     
@@ -54,7 +59,17 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         fetchAllCravings()
         
- 
+       
+        locManager.requestWhenInUseAuthorization()
+        
+        
+        if( CLLocationManager.authorizationStatus() == CLAuthorizationStatus.AuthorizedWhenInUse ||
+            CLLocationManager.authorizationStatus() == .AuthorizedAlways ){
+                
+                currentLocation = locManager.location!
+                geocodeLocation(currentLocation)
+        
+        }
     }
 
     override func viewWillAppear(animated: Bool) {
@@ -291,6 +306,31 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
         return cells
     }
     
+    
+    func geocodeLocation(location: CLLocation) {
+        
+        
+        CLGeocoder().reverseGeocodeLocation(location, completionHandler: {(placemarks, error) -> Void in
+            print(location)
+            
+            
+            if error != nil {
+                print("Reverse geocoder failed with error")
+                return
+            }
+            
+            if placemarks!.count > 0 {
+                let pm = placemarks![0] as! CLPlacemark
+                print(pm.locality)
+                self.locationButton.center = self.view.center
+                self.locationButton.titleLabel?.text = "Near \(pm.locality!)"
+
+            }
+            else {
+                print("Problem with the data received from geocoder")
+            }
+        })
+    }
     
     
 }
