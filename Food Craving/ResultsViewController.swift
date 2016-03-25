@@ -184,7 +184,7 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
         let latlon = "\(myLocations.first?.coordinate.latitude),\(myLocations.first?.coordinate.longitude)"
         print(latlon)
         
-        print(<#T##items: Any...##Any#>)
+
         let ll = "\(latitude),\(longitude)"
         let parameters = [
             "ll": "\(ll)",
