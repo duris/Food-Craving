@@ -8,6 +8,7 @@
 
 import UIKit
 import CoreData
+import CoreLocation
 
 class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
@@ -21,9 +22,10 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
     var activeCravings = [Craving]()
     var distance : Double!
     var cravingLoadedCount = 0
-
-    
-    
+    var latitude: String!
+    var longitude: String!
+ var myLocations: [CLLocation] = []
+    let locationManager = CLLocationManager()
     
     /*
     Core Data Convenience
@@ -39,6 +41,16 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        self.locationManager.requestAlwaysAuthorization()
+        
+        // For use in foreground
+        self.locationManager.requestWhenInUseAuthorization()
+        
+        if CLLocationManager.locationServicesEnabled() {
+            locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
+            locationManager.startUpdatingLocation()
+        }
         
         print(round(distance))
 
@@ -68,12 +80,12 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
             }
             
            
-            searchYelp(cravings) { (success) in
-                if success {
-                    //self.sortSimilar()
-                    print("Craving Count: \(self.cravingLoadedCount)")
-                }
-            }
+//            searchYelp(cravings) { (success) in
+//                if success {
+//                    //self.sortSimilar()
+//                    print("Craving Count: \(self.cravingLoadedCount)")
+//                }
+//            }
             
         } catch {
             let fetchError = error as NSError
@@ -82,6 +94,16 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         
     }
+    
+    func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        
+        for location in locations {
+            myLocations.append(location)
+        }
+        
+        print(myLocations.first)
+    }
+    
     
     func searchYelp(cravings:[Craving], completionHandler: (success: Bool) -> Void) {
         for craving in cravings {
@@ -154,8 +176,14 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     
     func runSearch(term: String, limit: String) {
+        print(latitude)
+        print(longitude)
+        print("lat long: \(latitude!)")
+        let lat = "lat long: \(latitude!)"
+        let lon = longitude!
+        let ll = "\(self.latitude!),\(self.longitude!)"
         let parameters = [
-            "ll": "39.9797, -83.0047",
+            "ll": "\(ll)",
             "radius_filter": "\(round(distance))",
             "sort": "0",
             "term": term,

@@ -152,18 +152,6 @@
                                     <constraint firstAttribute="height" constant="94" id="cKm-us-NlF"/>
                                 </constraints>
                             </imageView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3UL-zx-gJ8">
-                                <rect key="frame" x="87" y="379" width="426" height="33"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="33" id="LGn-ZM-9Bi"/>
-                                    <constraint firstAttribute="width" constant="426" id="zkX-tR-Okr"/>
-                                </constraints>
-                                <fontDescription key="fontDescription" type="system" pointSize="20"/>
-                                <state key="normal" title="Near Current Location"/>
-                                <connections>
-                                    <action selector="didPressChangeLocationButton" destination="BYZ-38-t0r" eventType="touchUpInside" id="cnJ-HA-Qso"/>
-                                </connections>
-                            </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ISI-lT-BNe">
                                 <rect key="frame" x="550" y="89" width="30" height="32"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="16"/>
@@ -172,22 +160,32 @@
                                     <action selector="didTouchEditButton" destination="BYZ-38-t0r" eventType="touchUpInside" id="9rV-SV-A2a"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3UL-zx-gJ8">
+                                <rect key="frame" x="58" y="458" width="485" height="36"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="485" id="bg8-7v-jL3"/>
+                                    <constraint firstAttribute="height" constant="36" id="fas-jw-nJ2"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="20"/>
+                                <state key="normal" title="Choose Location"/>
+                                <connections>
+                                    <action selector="didPressChangeLocationButton" destination="BYZ-38-t0r" eventType="touchUpInside" id="cnJ-HA-Qso"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="1" green="0.98121150030000004" blue="0.94985473549999999" alpha="1" colorSpace="calibratedRGB"/>
                         <constraints>
                             <constraint firstItem="vkQ-zq-GE6" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="0t6-0h-HkO"/>
                             <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="UC8-Qa-HzY" secondAttribute="bottom" id="6KS-ML-bgJ"/>
+                            <constraint firstItem="3UL-zx-gJ8" firstAttribute="top" secondItem="JbU-Hm-5AL" secondAttribute="bottom" constant="28" id="DcI-6x-nqR"/>
                             <constraint firstItem="vkQ-zq-GE6" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="3" id="Ezf-ii-66S"/>
                             <constraint firstItem="UC8-Qa-HzY" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="-20" id="IAC-Aa-RAg"/>
                             <constraint firstAttribute="trailingMargin" secondItem="UC8-Qa-HzY" secondAttribute="trailing" constant="-20" id="JQJ-Hg-PZi"/>
                             <constraint firstItem="JbU-Hm-5AL" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="-20" id="KZa-FV-5fq"/>
                             <constraint firstAttribute="trailingMargin" secondItem="JbU-Hm-5AL" secondAttribute="trailing" constant="-20" id="WZn-cr-qXd"/>
-                            <constraint firstItem="UC8-Qa-HzY" firstAttribute="top" secondItem="3UL-zx-gJ8" secondAttribute="bottom" constant="130" id="XGg-9s-Q5j"/>
                             <constraint firstAttribute="trailingMargin" secondItem="ISI-lT-BNe" secondAttribute="trailing" id="aHX-Cg-NYm"/>
+                            <constraint firstItem="3UL-zx-gJ8" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="bqZ-Gh-ngp"/>
                             <constraint firstItem="JbU-Hm-5AL" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="76" id="j8l-Ka-Muv"/>
-                            <constraint firstItem="3UL-zx-gJ8" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="lq6-FL-RDF"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="3UL-zx-gJ8" secondAttribute="trailing" constant="67" id="tge-zT-j7Y"/>
-                            <constraint firstItem="3UL-zx-gJ8" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="67" id="vau-6N-v0e"/>
                             <constraint firstItem="ISI-lT-BNe" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="25" id="w3G-ND-eZ5"/>
                         </constraints>
                     </view>

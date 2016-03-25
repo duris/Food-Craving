@@ -10,7 +10,7 @@ import UIKit
 import CoreData
 import CoreLocation
 
-class MenuViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, NSFetchedResultsControllerDelegate {
+class MenuViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, NSFetchedResultsControllerDelegate,CLLocationManagerDelegate{
     
     @IBOutlet weak var sliderTableView:UITableView!
     var searchTerms = [String]()
@@ -60,6 +60,10 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
         logoImage.tintColor = UIColor.brownColor()
         
         fetchedCravingsController.delegate = self
+    
+        var locManager = CLLocationManager()
+        
+  
         
         fetchAllCravings()
         
@@ -69,23 +73,34 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
              editButton.enabled = false
         }
         
-         var locManager = CLLocationManager()
-        
-        
-        if( CLLocationManager.authorizationStatus() == CLAuthorizationStatus.AuthorizedWhenInUse ||
-            CLLocationManager.authorizationStatus() == .AuthorizedAlways ){
-                
-                if let location = locManager.location! as? CLLocation{
-                    currentLocation = location
-                }
-
-                geocodeLocation(currentLocation)
-        
+        if CLLocationManager.locationServicesEnabled() {
+            locManager.delegate = self
+            locManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
+            locManager.startUpdatingLocation()
         }
+        if let location = locManager.location! as? CLLocation{
+            currentLocation = location
+            
+            print(currentLocation)
+            geocodeLocation(currentLocation)
+        }
+        
+     
     }
     
     override func viewWillAppear(animated: Bool) {
         navigationController?.navigationBarHidden = true
+        
+    }
+    
+    override func viewDidAppear(animated: Bool) {
+        
+        let defaults = NSUserDefaults.standardUserDefaults()
+        if let selected = defaults.stringForKey("selectedString")
+        {
+            print("selected :\(selected)")
+            locationButton.setTitle(selected, forState: .Normal)
+        }
     }
     
    
@@ -177,14 +192,9 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
             let cell = tableView.dequeueReusableCellWithIdentifier("Cell") as! SliderCell
         
             let craving = fetchedCravingsController.objectAtIndexPath(indexPath) as! Craving
-        
             cell.slider.sliderTitleLabel.text = craving.title
-        
             cell.craving = craving
-        
-        
             cell.slider.ratingNumber = craving.rating
-        
             if craving.rating > 1 {
                 cell.slider.sliderTitleLabel.textColor = UIColor.blackColor()
                 searchTerms.append(cell.slider.sliderTitleLabel.text!)
@@ -316,13 +326,14 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
     @IBAction func didPressSearchButton() {
         let vc = storyboard?.instantiateViewControllerWithIdentifier("ResultsViewController") as! ResultsViewController
         
-    
+        
     
         //vc.searchStrings.removeAll()
         //vc.searchStrings = getSearchTerms()
 
         vc.distance = distanceMeters
-
+        vc.latitude = ""
+        vc.longitude = ""
         navigationController?.pushViewController(vc, animated: true)
     }
  
@@ -364,7 +375,15 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
                 print(pm.locality)
                 self.locationButton.center = self.view.center
                 self.locationButton.titleLabel?.text = "Near \(pm.locality!)"
-
+                print("Near \(pm.locality!)")
+                
+                
+                let defaults = NSUserDefaults.standardUserDefaults()
+//                let lat = "\(pm.location?.coordinate.latitude)"
+//                let lon = "\(pm.location?.coordinate.longitude)"
+                defaults.setObject(pm.location?.coordinate.latitude, forKey: "userLatitude")
+                defaults.setObject(pm.location?.coordinate.longitude, forKey: "userLongitude")
+                
             }
             else {
                 print("Problem with the data received from geocoder")

@@ -7,13 +7,15 @@
 //
 
 import UIKit
+import CoreLocation
 
 class LocationSelectorViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate {
     
     @IBOutlet weak var locationsTableView:UITableView!
     @IBOutlet weak var searchBar:UISearchBar!
     var searchResults = [AnyObject]()
-
+    var geocoder = CLGeocoder()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -50,11 +52,31 @@ class LocationSelectorViewController: UIViewController, UITableViewDelegate, UIT
         }
         
     }
+    
+    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        let address = searchResults[indexPath.row] as? String
+        geocoder.geocodeAddressString(address!, completionHandler: {(placemarks: [CLPlacemark]?, error: NSError?) -> Void in
+            
+            if placemarks!.count > 0 {
+                let pm = placemarks![0]
+                
+                let defaults = NSUserDefaults.standardUserDefaults()
+       
+                defaults.setObject(address!, forKey: "selectedString")
+             
+            }
+          
+        })
+        
+       dismissViewControllerAnimated(true, completion: nil)
+        
+       
+    }
 
     @IBAction func didPressCancelButton() {
         dismissViewControllerAnimated(true, completion: nil)
     }
 
     
-
+    
 }
