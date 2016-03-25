@@ -17,6 +17,7 @@ class BusinessCell: UITableViewCell {
     @IBOutlet weak var resultSubTitleLabel:UILabel!
     @IBOutlet weak var ratingImageView:UIImageView!
     @IBOutlet weak var reviewCountLabel:UILabel!
+    @IBOutlet weak var yelpLogo:UIImageView!
     var business: Business!
     
     override func awakeFromNib() {

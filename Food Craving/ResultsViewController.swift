@@ -10,7 +10,7 @@ import UIKit
 import CoreData
 import CoreLocation
 
-class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource,CLLocationManagerDelegate  {
     
     @IBOutlet weak var resultsTableView: UITableView!
     var results = [Business]()
@@ -22,8 +22,8 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
     var activeCravings = [Craving]()
     var distance : Double!
     var cravingLoadedCount = 0
-    var latitude: String!
-    var longitude: String!
+    var latitude = "39.9612"
+    var longitude = "-82.9988"
  var myLocations: [CLLocation] = []
     let locationManager = CLLocationManager()
     
@@ -42,12 +42,13 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.locationManager.requestAlwaysAuthorization()
+        locationManager.requestAlwaysAuthorization()
         
         // For use in foreground
-        self.locationManager.requestWhenInUseAuthorization()
+        locationManager.requestWhenInUseAuthorization()
         
         if CLLocationManager.locationServicesEnabled() {
+            locationManager.delegate = self
             locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
             locationManager.startUpdatingLocation()
         }
@@ -80,12 +81,12 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
             }
             
            
-//            searchYelp(cravings) { (success) in
-//                if success {
-//                    //self.sortSimilar()
-//                    print("Craving Count: \(self.cravingLoadedCount)")
-//                }
-//            }
+            searchYelp(cravings) { (success) in
+                if success {
+                    //self.sortSimilar()
+                    print("Craving Count: \(self.cravingLoadedCount)")
+                }
+            }
             
         } catch {
             let fetchError = error as NSError
@@ -101,8 +102,10 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
             myLocations.append(location)
         }
         
-        print(myLocations.first)
+        latitude = "\(myLocations.first?.coordinate.latitude)"
+        longitude = "\(myLocations.first?.coordinate.longitude)"
     }
+    
     
     
     func searchYelp(cravings:[Craving], completionHandler: (success: Bool) -> Void) {
@@ -138,11 +141,11 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        let vc = storyboard?.instantiateViewControllerWithIdentifier("BusinessViewController") as! BusinessViewController
-
-        let business = results[indexPath.row]
-        vc.business = business
-        navigationController?.pushViewController(vc, animated: true)
+        
+        //Open link to yelp
+        let mainUrlString = results[indexPath.row].mainURL
+        let url = NSURL(string: mainUrlString)!
+        UIApplication.sharedApplication().openURL(url)
     }
 
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
@@ -176,12 +179,13 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     
     func runSearch(term: String, limit: String) {
-        print(latitude)
-        print(longitude)
-        print("lat long: \(latitude!)")
-        let lat = "lat long: \(latitude!)"
-        let lon = longitude!
-        let ll = "\(self.latitude!),\(self.longitude!)"
+    
+        print("my location: \(myLocations.count)")
+        let latlon = "\(myLocations.first?.coordinate.latitude),\(myLocations.first?.coordinate.longitude)"
+        print(latlon)
+        
+        print(<#T##items: Any...##Any#>)
+        let ll = "\(latitude),\(longitude)"
         let parameters = [
             "ll": "\(ll)",
             "radius_filter": "\(round(distance))",
@@ -213,7 +217,13 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
                                         print(reviewCount)
                                         reviewCount = "\(reviews)"
                                     }
-                                    var biz = Business(imageUrl: image_url as! String, name: name as! String, searchString: term, id: id, duplicate:false, doubleDupe: false, starRating: url, reviewCount: reviewCount)
+                                    var mainUrl = ""
+                                    if let url = biz["url"] {
+                                        print("yeaaad")
+                                        print(url)
+                                        mainUrl = url as! String
+                                    }
+                                    var biz = Business(imageUrl: image_url as! String, name: name as! String, searchString: term, id: id, duplicate:false, doubleDupe: false, starRating: url, reviewCount: reviewCount, mainURL:mainUrl)
                                     self.tempIds.append(id!)
                                     //print(id!)
                                     

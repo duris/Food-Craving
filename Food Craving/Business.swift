@@ -19,4 +19,5 @@ struct Business {
     var doubleDupe = false
     let starRating:String!
     let reviewCount: String!
+    let mainURL:String!
 }

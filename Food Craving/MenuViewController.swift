@@ -27,6 +27,8 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
     @IBOutlet weak var deleteView:UIView!
     @IBOutlet weak var editButton:UIButton!
     
+   
+    
 
 
     
@@ -77,13 +79,22 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
             locManager.delegate = self
             locManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
             locManager.startUpdatingLocation()
-        }
-        if let location = locManager.location! as? CLLocation{
-            currentLocation = location
+            locManager.requestAlwaysAuthorization()
+            locManager.requestWhenInUseAuthorization()
             
-            print(currentLocation)
-            geocodeLocation(currentLocation)
+//            if let location = locManager.location as! CLLocation{
+//                currentLocation = location
+//                
+//                print(currentLocation)
+////                geocodeLocation(currentLocation)
+//            }
+            
         }
+       
+    
+        
+     
+       
         
      
     }
@@ -332,8 +343,8 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
         //vc.searchStrings = getSearchTerms()
 
         vc.distance = distanceMeters
-        vc.latitude = ""
-        vc.longitude = ""
+//        vc.latitude = "\(currentLocation.coordinate.latitude)"
+//        vc.longitude = "\(currentLocation.coordinate.longitude)"
         navigationController?.pushViewController(vc, animated: true)
     }
  
