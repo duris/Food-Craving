@@ -26,11 +26,11 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
     @IBOutlet weak var locationButton:UIButton!
     @IBOutlet weak var deleteView:UIView!
     @IBOutlet weak var editButton:UIButton!
+    var myLocations: [CLLocation] = []
+    var locManager = CLLocationManager()
     
-   
     
-
-
+    
     
     /*
     Core Data Convenience
@@ -43,7 +43,7 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
         CoreDataStackManager.sharedInstance().saveContext()
     }
     
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -62,17 +62,17 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
         logoImage.tintColor = UIColor.brownColor()
         
         fetchedCravingsController.delegate = self
-    
-        var locManager = CLLocationManager()
         
-  
+        
+        
+        
         
         fetchAllCravings()
         
         if fetchedCravingsController.fetchedObjects?.count > 0 {
             editButton.enabled = true
         } else {
-             editButton.enabled = false
+            editButton.enabled = false
         }
         
         if CLLocationManager.locationServicesEnabled() {
@@ -81,23 +81,23 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
             locManager.startUpdatingLocation()
             locManager.requestAlwaysAuthorization()
             locManager.requestWhenInUseAuthorization()
-            
-//            if let location = locManager.location as! CLLocation{
-//                currentLocation = location
-//                
-//                print(currentLocation)
-////                geocodeLocation(currentLocation)
-//            }
-            
         }
-       
-    
         
-     
-       
         
-     
     }
+    
+    func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        if locations.first != nil {
+            print("last chance")
+            print(locations.first?.coordinate.latitude)
+        }
+        for location in locations {
+            myLocations.append(location)
+        }
+        
+    }
+    
+    
     
     override func viewWillAppear(animated: Bool) {
         navigationController?.navigationBarHidden = true
@@ -114,7 +114,7 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
     }
     
-   
+    
     override func viewWillDisappear(animated: Bool) {
         navigationController?.navigationBarHidden = false
         if fetchedCravingsController.fetchedObjects?.count != 0 {
@@ -139,7 +139,7 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
             }
         }
     }
-  
+    
     /*
     Fetched Cravings Controller
     */
@@ -188,7 +188,7 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     
-  
+    
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
@@ -199,24 +199,24 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         
-            
-            let cell = tableView.dequeueReusableCellWithIdentifier("Cell") as! SliderCell
         
-            let craving = fetchedCravingsController.objectAtIndexPath(indexPath) as! Craving
-            cell.slider.sliderTitleLabel.text = craving.title
-            cell.craving = craving
-            cell.slider.ratingNumber = craving.rating
-            if craving.rating > 1 {
-                cell.slider.sliderTitleLabel.textColor = UIColor.blackColor()
-                searchTerms.append(cell.slider.sliderTitleLabel.text!)
-            }
-           
-            print("slider rating: \(cell.slider.ratingNumber)")
+        let cell = tableView.dequeueReusableCellWithIdentifier("Cell") as! SliderCell
         
-            cell.slider.setSlideToRating(craving.rating)
+        let craving = fetchedCravingsController.objectAtIndexPath(indexPath) as! Craving
+        cell.slider.sliderTitleLabel.text = craving.title
+        cell.craving = craving
+        cell.slider.ratingNumber = craving.rating
+        if craving.rating > 1 {
+            cell.slider.sliderTitleLabel.textColor = UIColor.blackColor()
+            searchTerms.append(cell.slider.sliderTitleLabel.text!)
+        }
         
- 
-           return cell
+        print("slider rating: \(cell.slider.ratingNumber)")
+        
+        cell.slider.setSlideToRating(craving.rating)
+        
+        
+        return cell
         
         
     }
@@ -227,7 +227,7 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
         for item in items!{
             if let craving = item as? Craving {
                 if craving.rating > 1 {
-                    strings.append(item.title)   
+                    strings.append(item.title)
                 }
             }
         }
@@ -240,21 +240,21 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     @IBAction func didTouchEditButton() {
         if fetchedCravingsController.fetchedObjects?.count != 0 {
-        for cell in getAllCells() {
-            if cell.deleteButton.hidden == true {
-             cell.deleteButton.hidden = false
-                editButton.setTitle("Done", forState: .Normal)
-            } else {
-                cell.deleteButton.hidden = true
-                editButton.setTitle("Edit", forState: .Normal)
+            for cell in getAllCells() {
+                if cell.deleteButton.hidden == true {
+                    cell.deleteButton.hidden = false
+                    editButton.setTitle("Done", forState: .Normal)
+                } else {
+                    cell.deleteButton.hidden = true
+                    editButton.setTitle("Edit", forState: .Normal)
+                }
             }
-        }
         }
         
     }
     
     func textFieldShouldReturn(textField: UITextField) -> Bool {
-
+        
         if textField == newCravingTextField {
             textField.hidden = true
             cancelNewCravingButton.hidden = true
@@ -273,7 +273,7 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
                     NSIndexPath(forRow: cravings!.count - 1, inSection: 0)
                     ], withRowAnimation: .Automatic)
                 sliderTableView.endUpdates()
-               //sliderTableView.reloadData()
+                //sliderTableView.reloadData()
                 editButton.enabled = true
             }
             
@@ -281,7 +281,7 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
             textField.resignFirstResponder()
             
             return true
-
+            
         } else {
             
             return true
@@ -310,7 +310,7 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
                     saveContext()
                     
                     sliderTableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Top)
-
+                    
                 }
             }
         }
@@ -318,7 +318,7 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
             editButton.setTitle("Edit", forState: .Normal)
             editButton.enabled = false
         }
-
+        
     }
     
     @IBAction func addNewCraving() {
@@ -326,10 +326,10 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
         cancelNewCravingButton.hidden = false
         newCravingTextField.becomeFirstResponder()
         if fetchedCravingsController.fetchedObjects?.count != 0 {
-        for cell in getAllCells() {
-            editButton.setTitle("Edit", forState: .Normal)
-            cell.deleteButton.hidden = true
-        }
+            for cell in getAllCells() {
+                editButton.setTitle("Edit", forState: .Normal)
+                cell.deleteButton.hidden = true
+            }
         }
     }
     
@@ -338,16 +338,23 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
         let vc = storyboard?.instantiateViewControllerWithIdentifier("ResultsViewController") as! ResultsViewController
         
         
-    
+        
         //vc.searchStrings.removeAll()
         //vc.searchStrings = getSearchTerms()
-
+        
         vc.distance = distanceMeters
-//        vc.latitude = "\(currentLocation.coordinate.latitude)"
-//        vc.longitude = "\(currentLocation.coordinate.longitude)"
-        navigationController?.pushViewController(vc, animated: true)
+        if myLocations.first != nil {
+            
+            vc.myLocations.append(myLocations.first!)
+            navigationController?.pushViewController(vc, animated: true)
+        } else {
+            
+            //using static location for testing
+            navigationController?.pushViewController(vc, animated: true)
+        }
+        
     }
- 
+    
     
     
     func getAllCells() -> [SliderCell] {
@@ -365,7 +372,7 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
         return cells
     }
-
+    
     @IBAction func didPressChangeLocationButton() {
         let vc = storyboard?.instantiateViewControllerWithIdentifier("LocationSelectorNavigationController") as! UINavigationController
         navigationController?.presentViewController(vc, animated: true, completion: nil)
@@ -390,8 +397,8 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
                 
                 
                 let defaults = NSUserDefaults.standardUserDefaults()
-//                let lat = "\(pm.location?.coordinate.latitude)"
-//                let lon = "\(pm.location?.coordinate.longitude)"
+                //                let lat = "\(pm.location?.coordinate.latitude)"
+                //                let lon = "\(pm.location?.coordinate.longitude)"
                 defaults.setObject(pm.location?.coordinate.latitude, forKey: "userLatitude")
                 defaults.setObject(pm.location?.coordinate.longitude, forKey: "userLongitude")
                 
@@ -415,7 +422,7 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
         customSC.layer.cornerRadius = 5.0  // Don't let background bleed
         customSC.backgroundColor = UIColor.clearColor()
         customSC.tintColor = UIColor.brownColor()
-
+        
         
         // Add target action method
         customSC.addTarget(self, action: "changeColor:", forControlEvents: .ValueChanged)
@@ -438,9 +445,9 @@ class MenuViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
     }
     
-
     
- 
+    
+    
     
 }
 

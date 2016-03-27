@@ -24,7 +24,8 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
     var cravingLoadedCount = 0
     var latitude = "39.9612"
     var longitude = "-82.9988"
- var myLocations: [CLLocation] = []
+    var myLocations: [CLLocation] = []
+    var location: CLLocationCoordinate2D?
     let locationManager = CLLocationManager()
     
     /*
@@ -54,7 +55,7 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
         
         print(round(distance))
-
+        
         resultsTableView.delegate = self
         resultsTableView.dataSource = self
         
@@ -80,7 +81,7 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
                 }
             }
             
-           
+            
             searchYelp(cravings) { (success) in
                 if success {
                     //self.sortSimilar()
@@ -130,7 +131,7 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
     override func viewWillAppear(animated: Bool) {
         resultsTableView.reloadData()
     }
-
+    
     override func viewWillDisappear(animated: Bool) {
         searchStrings.removeAll()
     }
@@ -147,11 +148,11 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
         let url = NSURL(string: mainUrlString)!
         UIApplication.sharedApplication().openURL(url)
     }
-
+    
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier("Cell") as! BusinessCell
-
-       
+        
+        
         cell.resulTitleLabel.text = results[indexPath.row].name
         cell.business = results[indexPath.row]
         
@@ -179,107 +180,113 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     
     func runSearch(term: String, limit: String) {
-    
-        print("my location: \(myLocations.count)")
-        let latlon = "\(myLocations.first?.coordinate.latitude),\(myLocations.first?.coordinate.longitude)"
-        print(latlon)
         
-
-        let ll = "\(latitude),\(longitude)"
-        let parameters = [
-            "ll": "\(ll)",
-            "radius_filter": "\(round(distance))",
-            "sort": "0",
-            "term": term,
-            "limit": limit]
-        
-        YelpClient.sharedInstance().searchPlacesWithParameters(parameters, successSearch: { (data, response) -> Void in
-            //print(NSString(data: data, encoding: NSUTF8StringEncoding))
-            dispatch_async(dispatch_get_main_queue(), {
-                do {
-                    let jsonArray = try NSJSONSerialization.JSONObjectWithData(data, options:[])
-                    
-                    if let businesses = jsonArray["businesses"] as? NSArray{
-                        for biz in (businesses as? [[String:AnyObject]])!{
-                            if let name = biz["name"] {
-                                
-                               
-                                
-                                let id = biz["id"] as? String
-                                if let image_url = biz["image_url"] {
-                                    var url = ""
-                                    var reviewCount = ""
-                                    if let starRating = biz["rating_img_url"] {
-                                        url = starRating as! String
-                                    }
-                                    if let reviews = biz["review_count"] {
-                                        print("review count")
-                                        print(reviewCount)
-                                        reviewCount = "\(reviews)"
-                                    }
-                                    var mainUrl = ""
-                                    if let url = biz["url"] {
-                                        print("yeaaad")
-                                        print(url)
-                                        mainUrl = url as! String
-                                    }
-                                    var biz = Business(imageUrl: image_url as! String, name: name as! String, searchString: term, id: id, duplicate:false, doubleDupe: false, starRating: url, reviewCount: reviewCount, mainURL:mainUrl)
-                                    self.tempIds.append(id!)
-                                    //print(id!)
+        if myLocations.count < 0 {
+            latitude = "39.9612"
+            longitude = "-82.9988"
+        } else {
+            
+            let location = CLLocationCoordinate2D(latitude: (myLocations.first?.coordinate.latitude)!, longitude: (myLocations.first?.coordinate.longitude)!)
+            
+            print("my location: \(location.latitude)")
+            latitude = "\(location.latitude)"
+            longitude = "\(location.longitude)"
+            
+            let ll = "\(latitude),\(longitude)"
+            let parameters = [
+                "ll": "\(ll)",
+                "radius_filter": "\(round(distance))",
+                "sort": "0",
+                "term": term,
+                "limit": limit]
+            
+            YelpClient.sharedInstance().searchPlacesWithParameters(parameters, successSearch: { (data, response) -> Void in
+                //print(NSString(data: data, encoding: NSUTF8StringEncoding))
+                dispatch_async(dispatch_get_main_queue(), {
+                    do {
+                        let jsonArray = try NSJSONSerialization.JSONObjectWithData(data, options:[])
+                        
+                        if let businesses = jsonArray["businesses"] as? NSArray{
+                            for biz in (businesses as? [[String:AnyObject]])!{
+                                if let name = biz["name"] {
                                     
                                     
-                                    for item in self.results {
-                                        if item.id == id {
-                                            biz.duplicate = true
-                                            for doubleDupe in self.duplicates {
-                                                if doubleDupe.id == item.id {
-                                                    print("Double dupe: \(doubleDupe.name)")
-                                                    print("\(doubleDupe.searchString)")
-                                                    biz.doubleDupe = true
-                                                }
-                                            }
-                                            if biz.doubleDupe == false {
-                                                print(biz.name)
-                                                print(biz.searchString)
-                                                self.duplicates.append(biz)
-                                                print("duplicates: \(self.duplicates.count)")
-                                            }
-                           
-                                        } else {
+                                    
+                                    let id = biz["id"] as? String
+                                    if let image_url = biz["image_url"] {
+                                        var url = ""
+                                        var reviewCount = ""
+                                        if let starRating = biz["rating_img_url"] {
+                                            url = starRating as! String
                                         }
+                                        if let reviews = biz["review_count"] {
+                                            print("review count")
+                                            print(reviewCount)
+                                            reviewCount = "\(reviews)"
+                                        }
+                                        var mainUrl = ""
+                                        if let url = biz["url"] {
+                                            print("yeaaad")
+                                            print(url)
+                                            mainUrl = url as! String
+                                        }
+                                        var biz = Business(imageUrl: image_url as! String, name: name as! String, searchString: term, id: id, duplicate:false, doubleDupe: false, starRating: url, reviewCount: reviewCount, mainURL:mainUrl)
+                                        self.tempIds.append(id!)
+                                        //print(id!)
+                                        
+                                        
+                                        for item in self.results {
+                                            if item.id == id {
+                                                biz.duplicate = true
+                                                for doubleDupe in self.duplicates {
+                                                    if doubleDupe.id == item.id {
+                                                        print("Double dupe: \(doubleDupe.name)")
+                                                        print("\(doubleDupe.searchString)")
+                                                        biz.doubleDupe = true
+                                                    }
+                                                }
+                                                if biz.doubleDupe == false {
+                                                    print(biz.name)
+                                                    print(biz.searchString)
+                                                    self.duplicates.append(biz)
+                                                    print("duplicates: \(self.duplicates.count)")
+                                                }
+                                                
+                                            } else {
+                                            }
+                                        }
+                                        if biz.duplicate == false {
+                                            self.results.append(biz)
+                                            self.resultsTableView.reloadData()
+                                            self.tempResults.append(biz.id)
+                                        }
+                                        
+                                        
                                     }
-                                    if biz.duplicate == false {
-                                        self.results.append(biz)
-                                        self.resultsTableView.reloadData()
-                                        self.tempResults.append(biz.id)
-                                    }
-                                   
-
+                                    
                                 }
-                           
                             }
                         }
-                    }
-                    
-                    self.cravingLoadedCount = self.cravingLoadedCount + 1
-                    print("craving loaded count:\(self.cravingLoadedCount)")
-                    print("active cravings: \(self.activeCravings.count)")
-                    if self.cravingLoadedCount/2 == self.activeCravings.count {
-                         self.sortSimilar()
                         
-                        //Stop Loading Results :)
+                        self.cravingLoadedCount = self.cravingLoadedCount + 1
+                        print("craving loaded count:\(self.cravingLoadedCount)")
+                        print("active cravings: \(self.activeCravings.count)")
+                        if self.cravingLoadedCount/2 == self.activeCravings.count {
+                            self.sortSimilar()
+                            
+                            //Stop Loading Results :)
+                        }
                     }
-                }
-                    
-                catch {
-                    print("Error: \(error)")
-                }
+                        
+                    catch {
+                        print("Error: \(error)")
+                    }
+                })
+                
+                }, failureSearch: { (error) -> Void in
+                    print(error)
             })
-            
-            }, failureSearch: { (error) -> Void in
-                print(error)
-        })
-
+        }
     }
     
     func sortSimilar() {
@@ -299,26 +306,26 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
                         biz.duplicate = true
                         print(biz.name)
                         print(biz.searchString)
-                    
+                        
                         print("duplicates: \(self.duplicates.count)")
-                        } else {
-                            //newResults.append(result)
-                        }
-                    }
-                    if biz.duplicate == false {
-                        newResults.append(biz)
+                    } else {
+                        //newResults.append(result)
                     }
                 }
-   
+                if biz.duplicate == false {
+                    newResults.append(biz)
+                }
             }
+            
+        }
         
-            results = newResults
-            resultsTableView.reloadData()
+        results = newResults
+        resultsTableView.reloadData()
         
-   
+        
         
     }
-
+    
     
     
     func getAllCells() -> [BusinessCell] {
@@ -332,7 +339,7 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
                 if let cell = resultsTableView.cellForRowAtIndexPath(NSIndexPath(forRow: j, inSection: i)) as? BusinessCell{
                     
                     if cell.business.duplicate == true {
-//                        resultsTableView.deleteRowsAtIndexPaths([NSIndexPath(forRow: j, inSection: i)], withRowAnimation: .None)
+                        //                        resultsTableView.deleteRowsAtIndexPaths([NSIndexPath(forRow: j, inSection: i)], withRowAnimation: .None)
                         results.removeAtIndex(j)
                         resultsTableView.reloadData()
                     }
@@ -342,6 +349,6 @@ class ResultsViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
         return cells
     }
-
+    
     
 }
